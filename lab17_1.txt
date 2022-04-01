@@ -1,0 +1,21 @@
+RND R0
+CALL 5
+HALT
+
+// counter job (5):
+PRINT R0
+MOVV R1, 1
+MOVV R3, 10
+
+// loop (13):
+JL R0, R3, 34
+MOVR R2, R0
+DIV R0, R3
+MOD R2, R3
+JE R2, R4, 13
+INC R1
+JP 13
+
+// end loop (34):
+PRINT R1
+RET

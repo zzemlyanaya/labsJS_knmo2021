@@ -1,0 +1,23 @@
+RND R0
+RND R1
+CALL 7
+HALT
+
+// main job (7):
+PRINT R0
+PRINT R1
+MOVR R2, R0
+MUL R2, R1
+CALL 25
+// back to lcm (19):
+DIV R2, R0
+PRINT R2
+HALT
+
+// gcd (25):
+JE R0, R1, 19
+JL R0, R1, 38
+SUB R0, R1
+JP 25
+SUB R1, R0
+JP 25

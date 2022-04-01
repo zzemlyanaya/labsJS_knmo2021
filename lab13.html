@@ -1,0 +1,163 @@
+<html>
+
+<head>
+    <meta charSet="utf-8">
+        <title>Hemming code</title>
+        <style type="text/css">
+            body { color: #2a78de; }
+        </style>
+</head>
+
+<body>
+    <h1>Hemming coding</h1>
+    Введите три буквы <input type='text' id='input_mes' maxLength='3'/>
+    <br/><br/>
+    <input type='button' value='Закодировать' onClick='code()'/>
+    <br/><br/>
+    Бинарный код <input type='text' id='code_mes_bin'/>
+    <br/><br/>
+    Закодированное сообщение <input type='text' id='code_mes'/>
+    <br/><br/>
+    <input type='button' value='Раскодировать' onClick='decode()'/>
+    <br/><br/>
+    Раскодированное сообщение: бинарное <input type='text' id='decode_mes_bin'/>
+    <br/><br/>
+    Раскодированное сообщение <input type='text' id='decode_mes'/>
+</body>
+
+<script>
+    function code() {
+        let str = document.getElementById('input_mes').value;
+        let bin = to_binary(str, 8);
+        document.getElementById('code_mes_bin').value = bin;
+        document.getElementById('code_mes').value = hammingEncode(bin);
+    }
+
+    function decode() {
+        let str = document.getElementById('code_mes').value;
+        let encoded = hammingDecode(str);
+        document.getElementById('decode_mes_bin').value = encoded;
+        document.getElementById('decode_mes').value = from_binary(encoded, 8);
+    }
+
+    function to_binary(str, n){
+        let bin = "";
+        for (let i = 0; i < str.length; i++){
+            let t = str.charCodeAt(i).toString(2);
+            bin += "0".repeat(n-t.length)+t;
+        }
+        return bin;
+    }
+
+    function from_binary(str, n) {
+        let mas = chunk(str, n);
+        let res = "";
+        for (let i = 0; i < mas.length; i++) {
+            res += String.fromCharCode(parseInt(mas[i], 2));
+        }
+        return res;
+    }
+
+    function hammingEncode(input) {
+        let output = [];
+        output.push(input.split("").map(it => parseInt(it)));
+        let controlBitsIndexes = [];
+        let N = input.length;
+        let i = 1;
+        let key;
+
+        while (N / i >= 1) {
+            controlBitsIndexes.push(i);
+            output.push([]);
+            i *= 2;
+        }
+
+        // вставляем контрольные биты
+        for (let j = 0; j < controlBitsIndexes.length; j++) {
+            key = controlBitsIndexes[j];
+            output[0].splice(key-1, 0, 0);
+        }
+        // строим матрицу
+        N = output[0].length;
+        for(let j = 0; j < N; j++) {
+            key = j+1;
+            let bin = key.toString(2);
+            bin = "0".repeat(controlBitsIndexes.length-bin.length)+bin;
+            bin = bin.split("").reverse().map(it => parseInt(it));
+            for (let k = 0; k < bin.length; k++) {
+                output[k+1][key-1] = bin[k];
+            }
+        }
+        // вычисляем контрольные биты
+        for (let j = 0; j < controlBitsIndexes.length; j++) {
+            key = controlBitsIndexes[j]-1;
+            let r = 0;
+            for (let k = 0; k < N; k++) {
+                r += output[0][k] * output[j+1][k];
+            }
+            r %= 2;
+            output[0][key] = r;
+        }
+
+        return output[0].join("");
+    }
+
+    function hammingDecode(input) {
+        let output = [];
+        output.push(input.split("").map(it => parseInt(it)));
+        let controlBitsIndexes = [];
+        let N = input.length;
+        let i = 1;
+        let key;
+
+        while (N / i >= 1) {
+            controlBitsIndexes.push(i);
+            output.push([]);
+            i *= 2;
+        }
+        // строим матрицу
+        N = output[0].length;
+        for(let j = 0; j < N; j++) {
+            key = j+1;
+            let bin = key.toString(2);
+            bin = "0".repeat(controlBitsIndexes.length-bin.length)+bin;
+            bin = bin.split("").reverse().map(it => parseInt(it));
+            for (let k = 0; k < bin.length; k++) {
+                output[k+1][key-1] = bin[k];
+            }
+        }
+        // вычисляем матрицу синдромов
+        let difs = []
+        for (let j = 0; j < controlBitsIndexes.length; j++) {
+            let r = 0;
+            for (let k = 0; k < N; k++) {
+                r += output[0][k] * output[j+1][k];
+            }
+            r %= 2;
+            difs.push(r);
+        }
+        let dif_num = parseInt(difs.reverse().join(""), 2)-1;
+        if (dif_num !== 0) {
+            if (output[0][dif_num] === 0) output[0][dif_num] = 1;
+            else output[0][dif_num] = 0;
+        }
+
+        let res = "";
+        for (let j = 0; j < N; j++) {
+            if (controlBitsIndexes.indexOf(j+1) === -1)
+                res += output[0][j];
+        }
+        return res;
+    }
+
+    function chunk(arr, size) {
+        let chunks = [], i = 0, n = arr.length;
+        while (i < n) {
+            chunks.push(arr.slice(i, i += size));
+        }
+        return chunks;
+    }
+
+</script>
+
+</html>

@@ -1,0 +1,139 @@
+<html>
+
+<head>
+    <meta charSet="utf-8">
+        <style type="text/css">
+            body {
+                background-color: #D9F0F1; font-family: "Montserrat";
+                color: #F43B4E;
+            }
+            .container {
+                width: 80%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .block {
+                width: 50%;
+                margin: auto;
+            }
+            input[type=number] {
+                width: 100%;
+                padding: 12px 12px;
+                margin: 8px 20px 12px 8px;
+                box-sizing: border-box;
+            }
+            input[type=button], input[type=submit], input[type=reset] {
+                width: 80%;
+                border-radius: 8px;
+                background-color: #F43B4E;
+                border: none;
+                color: #D9F0F1;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 16px 32px;
+                margin: 8px 20px 0 8px;
+                cursor: pointer;
+            }
+            table{
+                width: 80%;
+                padding: 16px 32px;
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+            th, td{
+                padding: 10px 20px;
+                border: 1px solid #2e3557;
+            }
+        </style>
+</head>
+
+<body>
+<h2>Table animation</h2>
+<div class="container">
+    <div class="block">
+        Строк <input type='number' id='input_rows'/>
+    </div>
+   <div class="block">
+       Столбцов <input type='number' id='input_columns'/>
+   </div>
+</div>
+<br/>
+<input type="submit" id="btn_draw" value="Нарисовать" onClick="tableCreate()">
+<input type="button" id="btn_animate" value="Анимировать" onClick="tableAnimate()">
+<br/><br/>
+</body>
+
+<script>
+    let current_color = "#D9F0F1";
+    let has_table = false;
+
+    function tableCreate() {
+        if (has_table) {
+            let tbl = document.getElementsByTagName('table')[0];
+            tbl.remove();
+        }
+        has_table = true;
+        const body = document.getElementsByTagName('body')[0];
+        const tbl = document.createElement('table');
+        const tbdy = document.createElement('tbody');
+
+        let rows = document.getElementById("input_rows").value;
+        rows = parseInt(rows);
+        let columns = document.getElementById("input_columns").value;
+        columns = parseInt(columns);
+
+        for (let i = 0; i < rows; i++) {
+            let tr = document.createElement('tr');
+            for (let j = 0; j < columns; j++) {
+                let td = document.createElement('td');
+                tr.appendChild(td);
+            }
+            tbdy.appendChild(tr);
+        }
+        tbl.appendChild(tbdy);
+        body.appendChild(tbl);
+    }
+
+    function tableAnimate() {
+        if (current_color === "#D9F0F1") current_color = "#62f3d8";
+        else current_color = "#D9F0F1";
+
+        let rows = document.getElementById("input_rows").value;
+        rows = parseInt(rows);
+        let columns = document.getElementById("input_columns").value;
+        columns = parseInt(columns);
+
+        const tds = document.getElementsByTagName("td");
+        let i = 0, j = 0, N = tds.length;
+        // animate top
+        let interval = setInterval(() => {
+            if (i < columns && j < rows) {
+                tds[i].style.background = current_color;
+                i++;
+            }
+            else if (j < rows) {
+                if (i === columns) i--;
+                j++;
+                i+=columns;
+                tds[i].style.background = current_color;
+            }
+            else if (i === N+columns-1) i -= columns;
+            else if (i > N-columns) {
+                i--;
+                tds[i].style.background = current_color;
+            }
+            else if (i === tds.length-columns) {
+                i -= columns;
+                tds[i].style.background = current_color;
+            }
+            else if (i < N-columns && j === rows) {
+                i -= columns;
+                tds[i].style.background = current_color;
+            }
+            else clearInterval(interval);
+        }, 100);
+    }
+
+</script>
+</html>
